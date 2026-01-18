@@ -30,8 +30,10 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWSQL_ROLE }}
+          SNOWFLAKE_HOST: ${{ secrets.SNOWSQL_HOST }}
+          SNOWFLAKE_REGION: ${{ secrets.SNOWSQL_REGION }}
         run: |
           snow connection add \
             --connection-name dev \
@@ -42,6 +44,8 @@ jobs:
             --database POC \
             --schema DEV \
             --role "$SNOWFLAKE_ROLE"
+            --host "$SNOWFLAKE_HOST" \
+            --region "$SNOWFLAKE_REGION"
           snow connection set-default dev
 
       - name: Run changed SQL scripts on DEV
@@ -110,8 +114,10 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWSQL_ROLE }}
+          SNOWFLAKE_HOST: ${{ secrets.SNOWSQL_HOST }}
+          SNOWFLAKE_REGION: ${{ secrets.SNOWSQL_REGION }}
         run: |
           snow connection add \
             --connection-name qa \
@@ -121,7 +127,9 @@ jobs:
             --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --database POC \
             --schema QA \
-            --role "$SNOWFLAKE_ROLE"
+            --role "$SNOWFLAKE_ROLE" \
+            --host "$SNOWFLAKE_HOST" \
+            --region "$SNOWFLAKE_REGION"
           snow connection set-default qa
 
       - name: Run changed SQL scripts on QA
@@ -189,8 +197,10 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWSQL_ROLE }}
+          SNOWFLAKE_HOST: ${{ secrets.SNOWSQL_HOST }}
+          SNOWFLAKE_REGION: ${{ secrets.SNOWSQL_REGION }}
         run: |
           snow connection add \
             --connection-name prod \
@@ -200,7 +210,9 @@ jobs:
             --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --database POC \
             --schema ${{ env.SCHEMA_PRD }} \
-            --role "$SNOWFLAKE_ROLE"
+            --role "$SNOWFLAKE_ROLE" \
+            --host "$SNOWFLAKE_HOST" \
+            --region "$SNOWFLAKE_REGION"
           snow connection set-default prod
 
       - name: Run changed SQL scripts on PRD
