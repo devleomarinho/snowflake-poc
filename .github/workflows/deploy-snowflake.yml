@@ -46,7 +46,8 @@ jobs:
             --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
             --region "$SNOWFLAKE_REGION" \
-            --port 443 
+            --port 443 \
+            --authenticator snowflake
           snow connection set-default dev
 
       - name: Run changed SQL scripts on DEV
@@ -131,7 +132,8 @@ jobs:
             --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
             --region "$SNOWFLAKE_REGION" \
-            --port 443
+            --port 443 \
+            --authenticator snowflake
           snow connection set-default qa
 
       - name: Run changed SQL scripts on QA
@@ -215,7 +217,8 @@ jobs:
             --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
             --region "$SNOWFLAKE_REGION" \
-            --port 443
+            --port 443 \
+            --authenticator snowflake
           snow connection set-default prod
 
       - name: Run changed SQL scripts on PRD
