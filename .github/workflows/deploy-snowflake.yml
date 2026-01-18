@@ -45,7 +45,8 @@ jobs:
             --schema DEV \
             --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
-            --region "$SNOWFLAKE_REGION"
+            --region "$SNOWFLAKE_REGION" \
+            --port 443 
           snow connection set-default dev
 
       - name: Run changed SQL scripts on DEV
@@ -129,7 +130,8 @@ jobs:
             --schema QA \
             --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
-            --region "$SNOWFLAKE_REGION"
+            --region "$SNOWFLAKE_REGION" \
+            --port 443
           snow connection set-default qa
 
       - name: Run changed SQL scripts on QA
@@ -212,7 +214,8 @@ jobs:
             --schema ${{ env.SCHEMA_PRD }} \
             --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
-            --region "$SNOWFLAKE_REGION"
+            --region "$SNOWFLAKE_REGION" \
+            --port 443
           snow connection set-default prod
 
       - name: Run changed SQL scripts on PRD
