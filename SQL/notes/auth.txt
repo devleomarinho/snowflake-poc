@@ -1,0 +1,2 @@
+snow sql --account CXOCWQR-ZJ88254 --user DEVLEOMARINHO --database POC_SNOWFLAKE --warehouse COMPUTE_WH --schema BRONZE -f ./SQL/DDL/bronze/bronze_customers.sql
+D:\#DATAPROJECTS\snowflake-poc\snowflake-poc\SQL\DDL\bronze\bronze_customers.sql

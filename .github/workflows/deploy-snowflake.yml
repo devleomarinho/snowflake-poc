@@ -30,14 +30,18 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
         run: |
           snow connection add \
             --connection-name dev \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --database POC \
-            --schema DEV
+            --schema DEV \
+            --role "$SNOWFLAKE_ROLE"
           snow connection set-default dev
 
       - name: Run changed SQL scripts on DEV
@@ -106,14 +110,18 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
         run: |
           snow connection add \
             --connection-name qa \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --database POC \
-            --schema QA
+            --schema QA \
+            --role "$SNOWFLAKE_ROLE"
           snow connection set-default qa
 
       - name: Run changed SQL scripts on QA
@@ -181,14 +189,18 @@ jobs:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
           SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
         run: |
           snow connection add \
             --connection-name prod \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --database POC \
-            --schema ${{ env.SCHEMA_PRD }}
+            --schema ${{ env.SCHEMA_PRD }} \
+            --role "$SNOWFLAKE_ROLE"
           snow connection set-default prod
 
       - name: Run changed SQL scripts on PRD
