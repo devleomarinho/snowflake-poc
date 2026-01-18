@@ -43,7 +43,7 @@ jobs:
             --warehouse "$SNOWFLAKE_WAREHOUSE" \
             --database POC \
             --schema DEV \
-            --role "$SNOWFLAKE_ROLE"
+            --role "$SNOWFLAKE_ROLE" \
             --host "$SNOWFLAKE_HOST" \
             --region "$SNOWFLAKE_REGION"
           snow connection set-default dev
