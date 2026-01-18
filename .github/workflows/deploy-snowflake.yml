@@ -16,45 +16,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Snow CLI
+      - name: Install system dependencies
         run: |
-          pip install snowflake-cli-labs
+          sudo apt-get update
+          sudo apt-get install -y libaio1 libncurses6 alien
 
-      - name: Configure Snow CLI connection
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWSQL_ROLE }}
-          SNOWFLAKE_HOST: ${{ secrets.SNOWSQL_HOST }}
-          SNOWFLAKE_REGION: ${{ secrets.SNOWSQL_REGION }}
+      - name: Download and install SnowSQL via RPM
         run: |
-          snow connection add \
-            --connection-name dev \
-            --account "$SNOWFLAKE_ACCOUNT" \
-            --user "$SNOWFLAKE_USER" \
-            --password "$SNOWFLAKE_PASSWORD" \
-            --warehouse "$SNOWFLAKE_WAREHOUSE" \
-            --database POC \
-            --schema DEV \
-            --role "$SNOWFLAKE_ROLE" \
-            --host "$SNOWFLAKE_HOST" \
-            --region "$SNOWFLAKE_REGION" \
-            --port 443 \
-            --authenticator snowflake
-          snow connection set-default dev
+          wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.1-1.x86_64.rpm
+          sudo alien -i snowflake-snowsql-1.4.1-1.x86_64.rpm
+
+      - name: Add SnowSQL to PATH
+        run: echo "/usr/bin" >> $GITHUB_PATH
+
+      - name: Check SnowSQL installation
+        run: which snowsql && snowsql -v
 
       - name: Run changed SQL scripts on DEV
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
+          SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+          SNOWSQL_PWD: ${{ secrets.SNOWSQL_PWD }}
         run: |
           set -e
           if git rev-parse HEAD~1 >/dev/null 2>&1; then
@@ -82,15 +64,21 @@ jobs:
           done | sort -t: -k1,1n | cut -d: -f2-)
           for file in $ORDERED_FILES; do
             echo "Running $file on schema DEV"
-            OUTPUT=$(snow sql -f "$file" -c dev)
+            OUTPUT=$(snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER \
+              -d POC -s DEV \
+              -h "$SNOWSQL_ACCOUNT.snowflakecomputing.com" -p 443 \
+              -f $file)
             echo "$OUTPUT"
             if [[ "$file" == sql/procedures/* ]]; then
               PROC_NAME=$(echo "$OUTPUT" | grep -oP 'Function \K[^ ]+' | head -1)
               if [[ -n "$PROC_NAME" ]]; then
                 echo "Calling procedure $PROC_NAME on schema DEV"
-                snow sql -q "CALL $PROC_NAME();" -c dev
+                snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER \
+                  -d POC -s DEV \
+                  -h "$SNOWSQL_ACCOUNT.snowflakecomputing.com" -p 443 \
+                  -q "CALL $PROC_NAME();"
               else
-                echo "Could not extract the procedure name from the output for file $file"
+                echo "Could not extract the procedure name from the SnowSQL output for file $file"
               fi
             fi
           done
@@ -102,45 +90,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Snow CLI
+      - name: Install system dependencies
         run: |
-          pip install snowflake-cli-labs
+          sudo apt-get update
+          sudo apt-get install -y libaio1 libncurses6 alien
 
-      - name: Configure Snow CLI connection
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWSQL_ROLE }}
-          SNOWFLAKE_HOST: ${{ secrets.SNOWSQL_HOST }}
-          SNOWFLAKE_REGION: ${{ secrets.SNOWSQL_REGION }}
+      - name: Download and install SnowSQL via RPM
         run: |
-          snow connection add \
-            --connection-name qa \
-            --account "$SNOWFLAKE_ACCOUNT" \
-            --user "$SNOWFLAKE_USER" \
-            --password "$SNOWFLAKE_PASSWORD" \
-            --warehouse "$SNOWFLAKE_WAREHOUSE" \
-            --database POC \
-            --schema QA \
-            --role "$SNOWFLAKE_ROLE" \
-            --host "$SNOWFLAKE_HOST" \
-            --region "$SNOWFLAKE_REGION" \
-            --port 443 \
-            --authenticator snowflake
-          snow connection set-default qa
+          wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.1-1.x86_64.rpm
+          sudo alien -i snowflake-snowsql-1.4.1-1.x86_64.rpm
+
+      - name: Add SnowSQL to PATH
+        run: echo "/usr/bin" >> $GITHUB_PATH
+
+      - name: Check SnowSQL installation
+        run: which snowsql && snowsql -v
 
       - name: Run changed SQL scripts on QA
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
+          SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+          SNOWSQL_PWD: ${{ secrets.SNOWSQL_PWD }}
         run: |
           set -e
           if git rev-parse HEAD~1 >/dev/null 2>&1; then
@@ -168,15 +138,21 @@ jobs:
           done | sort -t: -k1,1n | cut -d: -f2-)
           for file in $ORDERED_FILES; do
             echo "Running $file on schema QA"
-            OUTPUT=$(snow sql -f "$file" -c qa)
+            OUTPUT=$(snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER \
+              -d POC -s QA \
+              -h "$SNOWSQL_ACCOUNT.snowflakecomputing.com" -p 443 \
+              -f $file)
             echo "$OUTPUT"
             if [[ "$file" == sql/procedures/* ]]; then
               PROC_NAME=$(echo "$OUTPUT" | grep -oP 'Function \K[^ ]+' | head -1)
               if [[ -n "$PROC_NAME" ]]; then
                 echo "Calling procedure $PROC_NAME on schema QA"
-                snow sql -q "CALL $PROC_NAME();" -c qa
+                snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER \
+                  -d POC -s QA \
+                  -h "$SNOWSQL_ACCOUNT.snowflakecomputing.com" -p 443 \
+                  -q "CALL $PROC_NAME();"
               else
-                echo "Could not extract the procedure name from the output for file $file"
+                echo "Could not extract the procedure name from the SnowSQL output for file $file"
               fi
             fi
           done
@@ -187,45 +163,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Snow CLI
+      - name: Install system dependencies
         run: |
-          pip install snowflake-cli-labs
+          sudo apt-get update
+          sudo apt-get install -y libaio1 libncurses6 alien
 
-      - name: Configure Snow CLI connection
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWSQL_ROLE }}
-          SNOWFLAKE_HOST: ${{ secrets.SNOWSQL_HOST }}
-          SNOWFLAKE_REGION: ${{ secrets.SNOWSQL_REGION }}
+      - name: Download and install SnowSQL via RPM
         run: |
-          snow connection add \
-            --connection-name prod \
-            --account "$SNOWFLAKE_ACCOUNT" \
-            --user "$SNOWFLAKE_USER" \
-            --password "$SNOWFLAKE_PASSWORD" \
-            --warehouse "$SNOWFLAKE_WAREHOUSE" \
-            --database POC \
-            --schema ${{ env.SCHEMA_PRD }} \
-            --role "$SNOWFLAKE_ROLE" \
-            --host "$SNOWFLAKE_HOST" \
-            --region "$SNOWFLAKE_REGION" \
-            --port 443 \
-            --authenticator snowflake
-          snow connection set-default prod
+          wget https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.1-1.x86_64.rpm
+          sudo alien -i snowflake-snowsql-1.4.1-1.x86_64.rpm
 
-      - name: Run changed SQL scripts on PRD
+      - name: Add SnowSQL to PATH
+        run: echo "/usr/bin" >> $GITHUB_PATH
+
+      - name: Check SnowSQL installation
+        run: which snowsql && snowsql -v
+
+      - name: Run changed SQL scripts
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWSQL_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWSQL_PWD }}
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
+          SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+          SNOWSQL_PWD: ${{ secrets.SNOWSQL_PWD }}
         run: |
           set -e
           if git rev-parse HEAD~1 >/dev/null 2>&1; then
@@ -253,15 +211,21 @@ jobs:
           done | sort -t: -k1,1n | cut -d: -f2-)
           for file in $ORDERED_FILES; do
             echo "Running $file on schema ${{ env.SCHEMA_PRD }}"
-            OUTPUT=$(snow sql -f "$file" -c prod)
+            OUTPUT=$(snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER \
+              -d POC -s ${{ env.SCHEMA_PRD }} \
+              -h "$SNOWSQL_ACCOUNT.snowflakecomputing.com" -p 443 \
+              -f $file)
             echo "$OUTPUT"
             if [[ "$file" == sql/procedures/* ]]; then
               PROC_NAME=$(echo "$OUTPUT" | grep -oP 'Function \K[^ ]+' | head -1)
               if [[ -n "$PROC_NAME" ]]; then
                 echo "Calling procedure $PROC_NAME on schema ${{ env.SCHEMA_PRD }}"
-                snow sql -q "CALL $PROC_NAME();" -c prod
+                snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER \
+                  -d POC -s ${{ env.SCHEMA_PRD }} \
+                  -h "$SNOWSQL_ACCOUNT.snowflakecomputing.com" -p 443 \
+                  -q "CALL $PROC_NAME();"
               else
-                echo "Could not extract the procedure name from the output for file $file"
+                echo "Could not extract the procedure name from the SnowSQL output for file $file"
               fi
             fi
           done
